@@ -18,26 +18,11 @@ from contextlib import contextmanager
 from bronx.stdtypes.date import now
 
 from ial_build.util import copy_files_in_cwd
-from . import PackError
+from . import PackError, COMPONENTS_MAP
 from . import GmkpackTool
 
 #: No automatic export
 __all__ = []
-
-# The distinction is based on the component having a build system:
-#         - integrated and plugged in gmkpack: package
-#         - no build system, or not plugged in gmkpack: project
-COMPONENTS_MAP = {'eckit':'hub/local/src/ecSDK',
-                  'fckit':'hub/local/src/ecSDK',
-                  'ecbuild':'hub/local/src/ecSDK',
-                  # src/local
-                  'ial':'src/local',
-                  #'oops':'src/local/oops_src'
-                  # __future__
-                  'atlas':'hub/local/src/Atlas',
-                  'surfex':'src/local/surfex',
-                  # mpa, falfi, ...
-                  }
 
 
 class Pack(object):
@@ -617,9 +602,9 @@ class Pack(object):
         If **version** is a list, the list is read in reverse order.
         User customization in ~/.config/ial_build/gmkpack/sources_filters/{version}.txt
         """
+        from ial_build import package_rootdir
         user_dirpath = os.path.join(os.environ['HOME'], '.config', 'ial_build', 'gmkpack', 'sources_filters')
-        base_dirpath = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                    'config', 'gmkpack', 'sources_filters')
+        base_dirpath = os.path.join(package_rootdir, 'conf', 'gmkpack', 'sources_filters')
         files = ['{}.txt'.format(project)]
         if versions is not None:
             if isinstance(versions, str):
@@ -639,9 +624,9 @@ class Pack(object):
         If **version** is a list, the list is read in reverse order.
         User customization in ~/.config/ial_build/gmkpack/dummy_symbols/{version}.txt
         """
+        from ial_build import package_rootdir
         user_dirpath = os.path.join(os.environ['HOME'], '.config', 'ial_build', 'gmkpack', 'dummy_symbols')
-        base_dirpath = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                    'config', 'gmkpack', 'dummy_symbols')
+        base_dirpath = os.path.join(package_rootdir, 'conf', 'gmkpack', 'dummy_symbols')
         files = []
         if versions is not None:
             if isinstance(versions, str):

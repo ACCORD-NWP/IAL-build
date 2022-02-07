@@ -650,7 +650,8 @@ class IALview(object):
         :param outdir: output directory for the doc file
         :param start_ref: starting reference to collect branch deltas
         """
-        template_file = os.path.join(os.path.dirname(__file__), 'config', 'doc_template.tex')
+        from ial_build import package_rootdir
+        template_file = os.path.join(package_rootdir, 'templates', 'contribution_documentation.tex')
         with io.open(template_file, 'r') as t:
             template = [l.strip() for l in t.readlines()]
         if start_ref is None:

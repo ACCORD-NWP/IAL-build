@@ -14,7 +14,7 @@ import re
 IAL_OFFICIAL_TAGS_re = re.compile('CY(?P<release>\d{2}([TRH]\d)?)' +
                                   '(_(?P<radical>.+)\.(?P<version>\d{2}))?$')
 IAL_OFFICIAL_PACKS_re = re.compile('(?P<prefix>((cy)|(CY))?)(?P<release>\d{2}([TRHtrh]\d)?)' + '_' +
-                                   '(?P<radical>.+)\.(?P<version>\d{2})' + '\.' + 
+                                   '(?P<radical>.+)\.(?P<version>\d{2})' + '\.' +
                                    '(?P<compiler_label>\w+)\.(?P<compiler_flag>\w+)' +
                                    '(?P<suffix>(\.pack)?)$')
 IAL_BRANCHES_re = re.compile('_'.join(['(?P<user>\w+)',

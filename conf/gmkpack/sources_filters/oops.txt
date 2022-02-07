@@ -6,3 +6,4 @@ cmake
 l95
 qg
 tools
+src/external

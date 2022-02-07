@@ -12,6 +12,22 @@ USUAL_BINARIES = ['masterodb', 'bator',
                   'oovar', 'ootestvar',
                   ]
 
+# The distinction is based on the component having a build system:
+#         - integrated and plugged in gmkpack: package
+#         - no build system, or not plugged in gmkpack: project
+COMPONENTS_MAP = {'eckit':'hub/local/src/ecSDK',
+                  'fckit':'hub/local/src/ecSDK',
+                  'ecbuild':'hub/local/src/ecSDK',
+                  # src/local
+                  'ial':'src/local',
+                  'oops':'src/local/oops_src'
+                  # __future__
+                  'atlas':'hub/local/src',
+                  'surfex':'src/local/surfex',
+                  # mpa, falfi, ...
+                  }
+
+
 class PackError(Exception):
     pass
 

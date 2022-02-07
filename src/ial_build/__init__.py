@@ -6,8 +6,11 @@
 
 from __future__ import print_function, absolute_import, unicode_literals, division
 
+import os
+
 """
 IAL (IFS-ARPEGE & LAM:ALADIN-AROME-ALARO-HARMONIE) source code management.
 """
 
 __version__ = '1.1.0'
+package_rootdir = os.path.dirname(os.path.dirname(os.path.realpath(__path__[0])))  # realpath to resolve symlinks
