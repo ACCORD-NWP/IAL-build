@@ -28,7 +28,9 @@ build-backend = "setuptools.build_meta"
 ial_build = "src/ial_build"
 
 [tool.setuptools.package-data]
-ial_build = ["conf/*.ini"]
+ial_build = [
+    "conf/gmkpack/sources_filters/*.txt",
+    ]
 
 [tool.setuptools.dynamic]
 version = {attr = "ial_build.__version__"}

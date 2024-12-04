@@ -17,6 +17,7 @@ from ial_build.util import copy_files_in_cwd, now
 from ial_build.repositories import git_clone
 from . import PackError, COMPONENTS_MAP
 from . import GmkpackTool
+from . import unsatisfied_references
 
 #: No automatic export
 __all__ = []
@@ -310,8 +311,7 @@ class Pack(object):
         print('\n' + msg + '\n' + '=' * len(msg))
         self._populate_from_repo_in_bulk(view.repository, filter_file=filter_file)
         # symbols to be ignored
-        symbols_file = self._configfile_for_symbols_to_be_dummyfied(view.tags_history)
-        self.ignore_dummy_symbols_from_file(symbols_file)
+        self.ignore_symbols_from_cycles(view.tags_history)
         self.write_view_info(view)
 
     def populate_from_IALview_as_incremental(self, view, start_ref=None):
@@ -596,8 +596,7 @@ class Pack(object):
         print('-' * 80)
         if not self.is_incremental:
             # symbols to be ignored
-            symbols_file = self._configfile_for_symbols_to_be_dummyfied(tags_history.get('IAL'))
-            self.ignore_dummy_symbols_from_file(symbols_file)
+            self.ignore_symbols_from_cycles(tags_history.get('IAL'))
         # log in pack
         shutil.copy(bundle.bundle_file, os.path.join(self.abspath, 'bundle.yml'))
 
@@ -707,6 +706,7 @@ class Pack(object):
 
     def _configfile_for_symbols_to_be_dummyfied(self, versions=None):
         """
+        DEPRECATED:
         Find config file of symbols to be added as dummys at link time.
         If **version** is a list, the list is read in reverse order.
         User customization in ~/.config/ial_build/gmkpack/dummy_symbols/{version}.txt
@@ -728,7 +728,7 @@ class Pack(object):
         return None  # if no file has been found
 
     def ignore_dummy_symbols_from_file(self, filename):
-        """Set symbols to be ignored in src/unsxref/verbose."""
+        """DEPRECATED: Set symbols to be ignored in src/unsxref/verbose."""
         if filename is None:
             print("\nList of symbols to be dummyfied - None provided.")
             symbols_list = []
@@ -737,7 +737,23 @@ class Pack(object):
             with io.open(filename, 'r') as ff:
                 symbols_list = [f.strip() for f in ff.readlines()
                                 if (not f.strip().startswith('#') and f.strip() != '')]  # ignore commented and blank lines
-        for s in symbols_list:
+        self.ignore_symbols(symbols_list)
+
+    def ignore_symbols_from_cycles(self, cycles):
+        """
+        Set symbols to be ignored in src/unsxref/verbose.
+        List of symbols picked up from pygmkpack.unsatisfied_references according to given cycles (in reverse order).
+        """
+        symbols = []
+        for c, symbols in cycles[::-1]:
+            if c in unsatisfied_references.keys():
+                break
+        self.ignore_symbols(symbols)
+
+    def ignore_symbols(self, symbols):
+        """Set symbols to be ignored in src/unsxref/verbose."""
+        print("\nList of symbols to be ignored in pack:")
+        for s in symbols:
             print(s)
             symbol_path = os.path.join(self.abspath, 'src', 'unsxref', 'verbose', s)
             with io.open(symbol_path, 'a'):
