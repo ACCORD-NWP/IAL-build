@@ -38,7 +38,7 @@ if __name__ == '__main__':
                             GmkpackTool.get_compiler_flag()),
                         default=GmkpackTool.get_compiler_flag())
     parser.add_argument('-t', '--pack_type',
-                        help='Type of pack (default: incr).',
+                        help='Type of pack (default: main).',
                         default='main',
                         choices=['incr', 'main'])
     parser.add_argument('-n', '--threads_number',

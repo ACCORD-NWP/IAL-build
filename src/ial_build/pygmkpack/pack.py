@@ -523,30 +523,20 @@ class Pack(object):
                 # main pack, or not able to determine an increment: bulk
                 pkg_parentdir = os.path.join(self.abspath, pkg_dst)
                 pkg_dst = os.path.join(self.abspath, pkg_dst, component)
-                if as_a_git_clone:
-                    git_clone(repository, pkg_dst, remove_if_preexisting=True)
-                    if component.upper() == 'IAL':
-                        print("Move contents of {} to {}".format(pkg_dst, pkg_parentdir))
-                        # move everything one level up
-                        for a in os.listdir(pkg_dst):
-                            shutil.move(os.path.join(pkg_dst, a), os.path.join(pkg_parentdir, a))
-                        os.rmdir(pkg_dst)
-                    # filter a posteriori
-                    # if filter_file is specified in bundle: special syntax
-                    in_repo = re.match(self._filter_file_in_repo_re, filter_file)
-                    if in_repo:
-                        filter_file = os.path.join(pkg_parentdir, in_repo.group('file'))
-                    to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
-                    self.filter_sources_a_posteriori(to_be_filtered)
-                else:
-                    # DEPRECATED:
-                    print("DEPRECATED: as_a_git_clone=False")
-                    if self.is_incremental:
-                        print("  ! Could not find initial version of component '{}'".format(component),
-                              "in root pack --> populated in bulk")
-                    self._populate_from_repo_in_bulk(repository,
-                                                     subdir=subdir,
-                                                     filter_file=filter_file)
+                git_clone(repository, pkg_dst, remove_if_preexisting=True)
+                if component.upper() == 'IAL':
+                    print("Move contents of {} to {}".format(pkg_dst, pkg_parentdir))
+                    # move everything one level up
+                    for a in os.listdir(pkg_dst):
+                        shutil.move(os.path.join(pkg_dst, a), os.path.join(pkg_parentdir, a))
+                    os.rmdir(pkg_dst)
+                # filter a posteriori
+                # if filter_file is specified in bundle: special syntax
+                in_repo = re.match(self._filter_file_in_repo_re, filter_file)
+                if in_repo:
+                    filter_file = os.path.join(pkg_parentdir, in_repo.group('file'))
+                to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
+                self.filter_sources_a_posteriori(to_be_filtered)
             else:
                 # incremental pack
                 self._populate_from_repo_as_incremental_component(repository,
@@ -703,41 +693,6 @@ class Pack(object):
                 if os.path.exists(ff):
                     return ff
         return None  # if no file has been found
-
-    def _configfile_for_symbols_to_be_dummyfied(self, versions=None):
-        """
-        DEPRECATED:
-        Find config file of symbols to be added as dummys at link time.
-        If **version** is a list, the list is read in reverse order.
-        User customization in ~/.config/ial_build/gmkpack/dummy_symbols/{version}.txt
-        """
-        from ial_build import package_rootdir
-        user_dirpath = os.path.join(os.environ['HOME'], '.config', 'ial_build', 'gmkpack', 'dummy_symbols')
-        base_dirpath = os.path.join(package_rootdir, 'conf', 'gmkpack', 'dummy_symbols')
-        files = []
-        if versions is not None:
-            if isinstance(versions, str):
-                versions = [versions]
-            if isinstance(versions, list):
-                files += ['{}.txt'.format(v) for v in versions]
-        for d in (user_dirpath, base_dirpath):
-            for f in files[::-1]:  # latest version first
-                ff = os.path.join(d, f)
-                if os.path.exists(ff):
-                    return ff
-        return None  # if no file has been found
-
-    def ignore_dummy_symbols_from_file(self, filename):
-        """DEPRECATED: Set symbols to be ignored in src/unsxref/verbose."""
-        if filename is None:
-            print("\nList of symbols to be dummyfied - None provided.")
-            symbols_list = []
-        else:
-            print("\nList of symbols to be dummyfied (read from file '{}'):".format(filename))
-            with io.open(filename, 'r') as ff:
-                symbols_list = [f.strip() for f in ff.readlines()
-                                if (not f.strip().startswith('#') and f.strip() != '')]  # ignore commented and blank lines
-        self.ignore_symbols(symbols_list)
 
     def ignore_symbols_from_cycles(self, cycles):
         """
