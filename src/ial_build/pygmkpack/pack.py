@@ -674,24 +674,21 @@ class Pack(object):
 
     def _configfile_for_sources_filtering(self, project, versions=None):
         """
-        Find filter file in config or user config, for project and optionally version.
+        Find filter file in conf, for project and optionally version.
         If **version** is a list, the list is read in reverse order.
-        User customization in ~/.config/ial_build/gmkpack/sources_filters/{version}.txt
         """
-        from ial_build import package_rootdir
-        user_dirpath = os.path.join(os.environ['HOME'], '.config', 'ial_build', 'gmkpack', 'sources_filters')
-        base_dirpath = os.path.join(package_rootdir, 'conf', 'gmkpack', 'sources_filters')
+        import importlib.resources
+        filter_dir = importlib.resources.files('ial_build.conf.gmkpack.sources_filters')
         files = ['{}.txt'.format(project)]
         if versions is not None:
             if isinstance(versions, str):
                 versions = [versions]
             if isinstance(versions, list):
                 files += ['{}-{}.txt'.format(project, v) for v in versions]
-        for d in (user_dirpath, base_dirpath):
-            for f in files[::-1]:
-                ff = os.path.join(d, f)
-                if os.path.exists(ff):
-                    return ff
+        for tentative_file in files[::-1]:
+            for existing_file in filter_dir.iter_dir():
+                if os.path.basename(existing_file) == tentative_file:
+                    return existing_file
         return None  # if no file has been found
 
     def ignore_symbols_from_cycles(self, cycles):
