@@ -163,9 +163,9 @@ class IALBundle(object):
         self.downloaded = None  # none = unknown
         self.src_dir = src_dir
 
-    def switch_remotes(self):
+    def _switch_remotes(self):
         """
-        Switch remotes (temporarily) of repositories to other names,
+        Switch remotes of repositories to other names (temporarily),
         so as to comply with required remotes from bundle.
         """
         self._to_rename = {}
@@ -192,10 +192,9 @@ class IALBundle(object):
                     if not matching:
                         r.remote_add(req_remote, req_remote_url)
                         self._to_rename[p].append({'initial':str(uuid.uuid4()), 'tmp':req_remote})
-                    print("am: switched:", r.remotes)
 
-    def switch_remotes_back(self):
-        """Switch back remote to their initial values. To be called after switch_remotes() only !"""
+    def _switch_remotes_back(self):
+        """Switch back remote to their initial values. To be called after _switch_remotes() only !"""
         for p, list_of_remotes in self._to_rename.items():
             r = GitProxy(self.local_project_repo(p))
             for remote in list_of_remotes[::-1]:
@@ -226,7 +225,7 @@ class IALBundle(object):
             if self.src_dir is not None:
                 print("IALBundle: src_dir overwritten by download to '{}'".format(src_dir))
             self.src_dir = src_dir
-        self.switch_remotes()
+        self._switch_remotes()
         # downloads
         try:
             b = BundleDownloader(bundle=self.bundle_file,
@@ -241,7 +240,7 @@ class IALBundle(object):
             if b.download() != 0:
                 raise RuntimeError("Downloading repositories failed.")
         finally:
-            self.switch_remotes_back()
+            self._switch_remotes_back()
         self.downloaded = True
         self.src_dir = b.src_dir()
 

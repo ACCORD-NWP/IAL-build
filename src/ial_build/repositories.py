@@ -523,6 +523,7 @@ class GitProxy(object):
         self._git_cmd(['git', 'remote', 'add', name, url])
 
     def remote_rename(self, source, target):
+        print("{} : rename remote {} to {}".format(self.repository, source, target))
         self._git_cmd(['git', 'remote', 'rename', source, target])
 
     def remote_rm(self, remote):
