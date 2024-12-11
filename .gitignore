@@ -6,3 +6,6 @@ deploy.sh
 .project
 .pydevproject
 .idea
+ial_build.egg-info
+build
+dist

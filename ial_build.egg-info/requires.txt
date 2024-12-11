@@ -1,1 +1,0 @@
-ecbundle@ git+https://github.com/ecmwf/ecbundle#egg=2.1.1
