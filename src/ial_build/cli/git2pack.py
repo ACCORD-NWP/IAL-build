@@ -1,16 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
 """
 Make or populate a pack from Git.
 """
-import os
 import argparse
-import sys
-
-# Automatically set the python path
-repo_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, os.path.join(repo_path, 'src'))
 
 from ial_build.algos import IALgitref2pack
 from ial_build.pygmkpack import GmkpackTool
@@ -20,7 +13,28 @@ from ial_build.config import (DEFAULT_IAL_REPO,
                               DEFAULT_PACK_COMPILER_FLAG)
 
 
-if __name__ == '__main__':
+def main():
+    args = get_args()
+    pack = IALgitref2pack(args.git_ref,
+                          args.repository,
+                          IAL_bundle_origin_repo=args.hub_bundle_origin_repo,
+                          IAL_bundle_tag_for_hub=args.hub_bundle_tag,
+                          bundle_cache_dir=args.hub_bundle_cache_dir,
+                          bundle_update=args.hub_bundle_update,
+                          pack_type=args.packtype,
+                          preexisting_pack=args.preexisting_pack,
+                          clean_if_preexisting=args.clean_if_preexisting,
+                          compiler_label=args.compiler_label,
+                          compiler_flag=args.compiler_flag,
+                          homepack=args.homepack,
+                          rootpack=args.rootpack)
+    pack.ics_tune('', GMK_THREADS=int(args.threads_number))
+    if args.programs != '':
+        for p in GmkpackTool.parse_programs(args.programs):
+            pack.ics_build_for(p)
+            pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
+
+def get_args():
     parser = argparse.ArgumentParser(description='Make or populate a pack from Git.')
     parser.add_argument('git_ref',
                         help='Git ref: branch or tag. WARNING: if none is provided, the currently checked out ref is taken.',
@@ -77,22 +91,5 @@ if __name__ == '__main__':
                         help="Main packs only: not to update=download bundled hub packages from their remote, " +
                              "so that no 'git fetch' and 'git checkout' is required",
                         default=True)
-    args = parser.parse_args()
-    pack = IALgitref2pack(args.git_ref,
-                          args.repository,
-                          IAL_bundle_origin_repo=args.hub_bundle_origin_repo,
-                          IAL_bundle_tag_for_hub=args.hub_bundle_tag,
-                          bundle_cache_dir=args.hub_bundle_cache_dir,
-                          bundle_update=args.hub_bundle_update,
-                          pack_type=args.packtype,
-                          preexisting_pack=args.preexisting_pack,
-                          clean_if_preexisting=args.clean_if_preexisting,
-                          compiler_label=args.compiler_label,
-                          compiler_flag=args.compiler_flag,
-                          homepack=args.homepack,
-                          rootpack=args.rootpack)
-    pack.ics_tune('', GMK_THREADS=int(args.threads_number))
-    if args.programs != '':
-        for p in GmkpackTool.parse_programs(args.programs):
-            pack.ics_build_for(p)
-            pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
+    return parser.parse_args()
+

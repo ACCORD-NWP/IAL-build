@@ -1,23 +1,50 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
 """
 Make or populate a pack from a bundle.
 """
 import os
 import argparse
-import sys
-
-# Automatically set the python path
-repo_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, os.path.join(repo_path, 'src'))
 
 from ial_build.algos import bundle_tag2pack, bundle_file2pack
 from ial_build.pygmkpack import GmkpackTool
 from ial_build.config import DEFAULT_BUNDLE_CACHE_DIR, DEFAULT_IALBUNDLE_REPO
 
 
-if __name__ == '__main__':
+def main():
+    args = get_args()
+    if os.path.exists(args.bundle):
+        pack = bundle_file2pack(args.bundle,
+                                src_dir=args.cache_directory,
+                                update=args.update,
+                                pack_type=args.pack_type,
+                                preexisting_pack=args.preexisting_pack,
+                                clean_if_preexisting=args.clean_if_preexisting,
+                                compiler_label=args.compiler_label,
+                                compiler_flag=args.compiler_flag,
+                                homepack=args.homepack,
+                                rootpack=args.rootpack)
+    else:
+        print("'{}' is not an existing local file, look for it as a tag in IAL-bundle repo.".format(args.bundle))
+        # bundle is provided as a tag
+        pack = bundle_tag2pack(args.bundle,
+                               IAL_bundle_origin_repo=args.bundle_origin_repo,
+                               src_dir=args.cache_directory,
+                               update=args.update,
+                               pack_type=args.pack_type,
+                               preexisting_pack=args.preexisting_pack,
+                               clean_if_preexisting=args.clean_if_preexisting,
+                               compiler_label=args.compiler_label,
+                               compiler_flag=args.compiler_flag,
+                               homepack=args.homepack,
+                               rootpack=args.rootpack)
+    pack.ics_tune('', GMK_THREADS=int(args.threads_number))
+    if args.programs != '':
+        for p in GmkpackTool.parse_programs(args.programs):
+            pack.ics_build_for(p)
+            pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
+
+def get_args():
     parser = argparse.ArgumentParser(description='Make or populate a pack from a bundle.')
     parser.add_argument('bundle',
                         help="Either a local path to a bundle file, or a tag in IAL-bundle repo. " +
@@ -77,35 +104,5 @@ if __name__ == '__main__':
                         help="Home of root packs to start from, for incremental packs. " +
                         "Defaults to Gmkpack's $ROOTPACK: {}".format(GmkpackTool.get_rootpack()),
                         default=GmkpackTool.get_rootpack())
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    if os.path.exists(args.bundle):
-        pack = bundle_file2pack(args.bundle,
-                                src_dir=args.cache_directory,
-                                update=args.update,
-                                pack_type=args.pack_type,
-                                preexisting_pack=args.preexisting_pack,
-                                clean_if_preexisting=args.clean_if_preexisting,
-                                compiler_label=args.compiler_label,
-                                compiler_flag=args.compiler_flag,
-                                homepack=args.homepack,
-                                rootpack=args.rootpack)
-    else:
-        print("'{}' is not an existing local file, look for it as a tag in IAL-bundle repo.")
-        # bundle is provided as a tag
-        pack = bundle_tag2pack(args.bundle,
-                               IAL_bundle_origin_repo=args.bundle_origin_repo,
-                               src_dir=args.cache_directory,
-                               update=args.update,
-                               pack_type=args.pack_type,
-                               preexisting_pack=args.preexisting_pack,
-                               clean_if_preexisting=args.clean_if_preexisting,
-                               compiler_label=args.compiler_label,
-                               compiler_flag=args.compiler_flag,
-                               homepack=args.homepack,
-                               rootpack=args.rootpack)
-    pack.ics_tune('', GMK_THREADS=int(args.threads_number))
-    if args.programs != '':
-        for p in GmkpackTool.parse_programs(args.programs):
-            pack.ics_build_for(p)
-            pack.ics_tune(p, GMK_THREADS=int(args.threads_number))

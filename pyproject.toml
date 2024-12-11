@@ -7,10 +7,10 @@ requires-python = ">=3.7"
 keywords = []
 license = {text = "CECILL-C"}
 authors = [
-    { name = "Alexandre Mary"  , email = "alexandre.mary@meteo.fr"}
+    { name = "Alexandre Mary" , email = "alexandre.mary@meteo.fr"}
     ]
 dependencies = [
-      #"ecbundle@git+https://github.com/ecmwf/ecbundle#egg=2.1.1",
+      "ecbundle@git+https://github.com/ecmwf/ecbundle#egg=2.1.1",
       ]
 
 [project.urls]
@@ -19,6 +19,10 @@ tracker = "https://github.com/ACCORD-NWP/IAL-build/issues"
 
 [project.scripts]
 ial-fork_point = "ial_build.cli.fork_point:main"
+ial-bundle2pack = "ial_build.cli.bundle2pack:main"
+ial-git2pack = "ial_build.cli.git2pack:main"
+ial-find_bundle = "ial_build.cli.find_bundle:main"
+ial-get_bundle = "ial_build.cli.get_bundle:main"
 
 [build-system]
 requires = ["setuptools"]

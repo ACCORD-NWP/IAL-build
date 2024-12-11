@@ -1,23 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import, unicode_literals, division
 """
 Get a copy of a bundle from IAL-bundle repository.
 """
-import os
 import argparse
 import sys
-
-# Automatically set the python path
-repo_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(0, os.path.join(repo_path, 'src'))
 
 from ial_build.bundle import TmpIALbundleRepo
 from ial_build.config import (DEFAULT_IAL_REPO,
                               DEFAULT_IALBUNDLE_REPO)
 
 
-if __name__ == '__main__':
+def main():
+    args = get_args()
+    IALbundles = TmpIALbundleRepo(args.IAL_bundle_origin_repo, verbose=args.verbose)
+    IALbundles.get_bundle(args.bundle_tag,
+                          to_file=args.output,
+                          overwrite=args.overwrite)
+
+def get_args():
     parser = argparse.ArgumentParser(description='Get a copy of a bundle from IAL-bundle repository.')
     parser.add_argument('bundle_tag',
                         help='Bundle tag to be fetched.')
@@ -41,8 +42,4 @@ if __name__ == '__main__':
                         help="URL of the 'IAL-bundle' repository to clone. " +
                              "Default: " + DEFAULT_IALBUNDLE_REPO,
                         default=DEFAULT_IALBUNDLE_REPO)
-    args = parser.parse_args()
-    IALbundles = TmpIALbundleRepo(args.IAL_bundle_origin_repo, verbose=args.verbose)
-    IALbundles.get_bundle(args.bundle_tag,
-                          to_file=args.output,
-                          overwrite=args.overwrite)
+    return parser.parse_args()
