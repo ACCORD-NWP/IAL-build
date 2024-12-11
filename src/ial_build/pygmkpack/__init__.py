@@ -28,13 +28,13 @@ COMPONENTS_MAP = {'eckit':'hub/local/src/ecSDK',
                   # mpa, falfi, ...
                   }
 
-unsatisfied_references = dict(
+unsatisfied_references = {
     "CY48":["imultio_flush_",
             "imultio_notify_step_",
             "imultio_write_",
             ],
     "CY50":[],  # they have been added to dummies in auxlibs in the config file recommended for CY50
-                              )
+                          }
 
 
 class PackError(Exception):

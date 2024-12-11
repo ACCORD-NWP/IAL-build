@@ -1,0 +1,6 @@
+[console_scripts]
+ial-bundle2pack = ial_build.cli.bundle2pack:main
+ial-find_bundle = ial_build.cli.find_bundle:main
+ial-fork_point = ial_build.cli.fork_point:main
+ial-get_bundle = ial_build.cli.get_bundle:main
+ial-git2pack = ial_build.cli.git2pack:main
