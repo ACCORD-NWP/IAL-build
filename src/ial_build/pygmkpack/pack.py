@@ -686,7 +686,7 @@ class Pack(object):
             if isinstance(versions, list):
                 files += ['{}-{}.txt'.format(project, v) for v in versions]
         for tentative_file in files[::-1]:
-            for existing_file in filter_dir.iter_dir():
+            for existing_file in filter_dir.iterdir():
                 if os.path.basename(existing_file) == tentative_file:
                     return existing_file
         return None  # if no file has been found
@@ -697,10 +697,10 @@ class Pack(object):
         List of symbols picked up from pygmkpack.unsatisfied_references according to given cycles (in reverse order).
         """
         symbols = []
-        for c, symbols in cycles[::-1]:
+        for c in cycles[::-1]:
             if c in unsatisfied_references.keys():
+                self.ignore_symbols(unsatisfied_references[c])
                 break
-        self.ignore_symbols(symbols)
 
     def ignore_symbols(self, symbols):
         """Set symbols to be ignored in src/unsxref/verbose."""

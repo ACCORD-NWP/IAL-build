@@ -3,7 +3,7 @@ name = "ial_build"
 dynamic = ["version"]
 description = "IAL-build: Tools for Source Code Management and build of IAL code."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 keywords = []
 license = {text = "CECILL-C"}
 authors = [
