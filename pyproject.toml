@@ -18,7 +18,7 @@ source = "https://github.com/ACCORD-NWP/IAL-build.git"
 tracker = "https://github.com/ACCORD-NWP/IAL-build/issues"
 
 [project.scripts]
-davai-build = "davai.cli.build:main"
+ial-fork_point = "ial_build.cli.fork_point:main"
 
 [build-system]
 requires = ["setuptools"]

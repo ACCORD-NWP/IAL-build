@@ -184,21 +184,23 @@ class GitProxy(object):
             print(out)
         print("    ...ok")
 
-    def oldest_common_ancestor(self, refA, refB='HEAD'):
+    def fork_point(self, refA, refB='HEAD'):
         """
-        Get the oldest "diverging" common ancestor to refA and refB.
+        Get the oldest "diverging" common ancestor to refA and refB,
+        or in other words, the commit before the first diverging commit in refs respective histories.
 
         From https://stackoverflow.com/questions/1527234/finding-a-branch-point-with-git
 
         diff -u <(git rev-list --first-parent topic) \
-                     <(git rev-list --first-parent master) | \
-                          sed -ne 's/^ //p' | head -1
+                <(git rev-list --first-parent master) | sed -ne 's/^ //p' | head -1
         """
-        from ial_build import package_rootdir
-        return subprocess.check_output([os.path.join(package_rootdir, 'bin', 'git-oldest_common_ancestor'),
-                                        refA,
-                                        refB],
-                                       cwd=self.repository).decode('utf-8').strip()
+        refA_revlist = self._git_cmd(['git', 'rev-list', '--first-parent', refA])[::-1]
+        refB_revlist = self._git_cmd(['git', 'rev-list', '--first-parent', refB])[::-1]
+        for i, c in enumerate(refA_revlist):
+            if refB_revlist[i] != c:  # first different commit in history
+                i0 = i-1  # the previous is the last common one
+                break
+        return refA_revlist[i0]
 
     # Ref(s) -------------------------------------------------------------------
 
@@ -780,7 +782,7 @@ class IALview(object):
                 ref = self.git_proxy.latest_commit  # get HEAD commit of branch
             else:  # actual commit
                 ref = self.ref
-            start_ref = self.git_proxy.oldest_common_ancestor(from_oldest_common_ancestor_with, ref)
+            start_ref = self.git_proxy.fork_point(from_oldest_common_ancestor_with, ref)
             commit_len = min(len(ref), len(start_ref))
             if ref[:commit_len] == start_ref[:commit_len]:
                 # commit is straightforward in branch (not merged), then:
