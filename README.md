@@ -81,3 +81,16 @@ will:
 ```
 ial-git2pack my_branch
 ```
+
+### Install a pack with a modified branch in `oops` only
+
+1. get a local copy of a bundle file that fits the basis of your development, e.g.
+  ```
+  ial-find_bundle --get_copy CY50
+  ```
+2. rename and edit your bundle file, setting your (potentially local) oops repository and branch
+3. in the bundle file still, set attribute `incremental_pack` of the `oops_src` project to `True`
+4. create your pack using
+   ```
+   ial-bundle2pack <my_bundle.yml> -t incr
+   ```
