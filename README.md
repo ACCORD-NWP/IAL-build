@@ -10,48 +10,28 @@ It provides a python package to do so, as well as a set of command-line tools.
 Dependencies
 ------------
 
-* `ecbundle` : https://github.com/ecmwf/ecbundle
-* Some functionalities may also clone and use [IAL-bundle](https://github.com/ACCORD-NWP/IAL-bundle). If you don't have internet connection at time of use, you may have to specify a local, pre-cloned, origin repository for IAL-bundle, using env variable `DEFAULT_IALBUNDLE_REPO`, e.g. `DEFAULT_IALBUNDLE_REPO=~/repositories/IAL-bundle`
+* `ecbundle` : https://github.com/ecmwf/ecbundle --- (quick install: `pip3 install --user git+https://github.com/ecmwf/ecbundle`)
+* Some functionalities may also clone and use [IAL-bundle](https://github.com/ACCORD-NWP/IAL-bundle), especially for the research of "official" bundles for main cycles. If you don't have internet connection at time of use, you may have to specify a local, pre-cloned, origin repository for IAL-bundle, using env variable `DEFAULT_IALBUNDLE_REPO`, e.g. `DEFAULT_IALBUNDLE_REPO=~/repositories/IAL-bundle`, or specifying it using command-line options, cf. help with option `-h`.
 
 Installation
 ------------
 
-* on `belenos`:
-
-  ```
-  module use ~mary/public/modulefiles
-  module load ecbundle
-  module load IAL-build
-  ```
-
-* at CNRM:
-  - install `ecbundle`, e.g. `pip3 install --user git+https://github.com/ecmwf/ecbundle`
-  - ```
-    IAL_BUILD_PACKAGE=/home/common/epygram/public/IAL-build/default
-    export PATH=$IAL_BUILD_PACKAGE/bin:$PATH
-    export PYTHONPATH=$IAL_BUILD_PACKAGE/src:$PYTHONPATH
-    ```
-  
-* in general:
-  - install `ecbundle`, e.g. `pip3 install git+https://github.com/ecmwf/ecbundle`
-  - Clone this repo, then add paths to the package:
-    ```
-    export PATH=<path to package>/bin:$PATH
-    export PYTHONPATH=<path to package>/src:$PYTHONPATH
-    ```
+`pip install ial-build`
 
 Documentation
 -------------
 
-(tbc) 
+**Cache directory**:
 
-* cache dir
-* gmkpack specificities (src/local, hub, ...)
+  When using a bundle (and `ecbundle`), the repositories are cloned/downloaded in a sort of cache directory, so as to speed-up the next use: only a fetch of the requested branch or git reference will be done.
+  The requested git reference is then checkedout in this cache repository, before being copied/cloned into the pack (in the case of gmkpack).
 
 Tools
 -----
 
-In the `bin/` directory, the `ial-*` commands can help finding bundles, create IAL branches and make packs (gmkpack) from bundles or IAL branches.
+When installed with `pip`, a bunch of `ial-*` commands are available in order to :
+* help finding bundles (`ial-find_bundle`, `ial-get_bundle`)
+* make packs (gmkpack) from bundles or IAL branches (`ial-git2pack`, `ial-bundle2pack`).
 They are auto-documented, see their argument `-h`.
 
 Some examples:
