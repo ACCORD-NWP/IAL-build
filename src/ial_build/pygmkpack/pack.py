@@ -141,9 +141,10 @@ class Pack(object):
         """
         args = self.genesis_arguments
         args.update({'-p':program.lower()})
-        if os.path.exists(self.ics_path_for(program)):
-            os.remove(self.ics_path_for(program))
         args.update({'-h':self.homepack})
+        # remove preexisting ics file
+        self.ics_remove('packages')
+        self.ics_remove(program)
         # build ics
         GmkpackTool.commandline(args, self.genesis_options, silent=silent)
 
