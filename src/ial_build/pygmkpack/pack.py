@@ -170,6 +170,10 @@ class Pack(object):
             self._ics_modify(program,
                              re.compile(pattern),
                              pattern.replace(r'(\d+)', str(GMK_THREADS)))
+            pattern = r'#SBATCH --cpus-per-task=(\d+)'
+            self._ics_modify(program,
+                             re.compile(pattern),
+                             pattern.replace(r'(\d+)', str(GMK_THREADS)))
         # modify optimization level
         if Ofrt is not None:
             pattern = r'Ofrt=(\d)'

@@ -33,6 +33,7 @@ def main():
         for p in GmkpackTool.parse_programs(args.programs):
             pack.ics_build_for(p)
             pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
+    pack.ics_tune('packages', GMK_THREADS=int(args.threads_number))
 
 def get_args():
     parser = argparse.ArgumentParser(description='Make or populate a pack from Git.')
