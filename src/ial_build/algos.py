@@ -269,8 +269,6 @@ def pack_build_executables(pack,
                     print("-> build output: {}".format(compile_output['Output']))
             print("-" * 50)
             build_report[program] = compile_output
-    print("Tune ics_packages")
-    pack.ics_tune('packages', **other_options)
     if fatal_build_failure == '__finally__':
         which = [k for k, v in build_report.items() if not v['OK']]
         OK = [k for k, v in build_report.items() if v['OK']]
