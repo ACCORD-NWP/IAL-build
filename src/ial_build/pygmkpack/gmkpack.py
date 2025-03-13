@@ -125,11 +125,11 @@ class GmkpackTool(object):
         return homepack
 
     @staticmethod
-    def get_rootpack(rootpack=None):
+    def get_rootpack(rootpack=None, fatal=True):
         """Get a ROOTPACK directory from argument, $ROOTPACK if defined, or None."""
         if rootpack in (None, ''):
             rootpack = os.environ.get('ROOTPACK')
-        if rootpack in ('', None):
+        if rootpack in ('', None) and fatal:
             raise ValueError("rootpack must be passed by argument or defined by env variable $ROOTPACK")
         return rootpack if rootpack != '' else None
 

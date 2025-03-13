@@ -103,7 +103,7 @@ def get_args():
                         GmkpackTool.get_homepack())
     parser.add_argument('-f', '--rootpack',
                         help="Home of root packs to start from, for incremental packs. " +
-                        "Defaults to Gmkpack's $ROOTPACK: {}".format(GmkpackTool.get_rootpack()),
+                        "Defaults to Gmkpack's $ROOTPACK: {}".format(GmkpackTool.get_rootpack(fatal=False)),
                         default=GmkpackTool.get_rootpack())
     return parser.parse_args()
 
