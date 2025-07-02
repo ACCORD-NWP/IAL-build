@@ -224,7 +224,7 @@ def pack_build_executables(pack,
         compile_output = pack.compile('',
                                       silent=silent,
                                       clean_before=cleanpack,
-                                      fatal=False)
+                                      fatal=True)
         if compile_output['OK']:
             print("... compilation OK !")
         else:  # build failed but not fatal
