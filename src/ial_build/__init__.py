@@ -6,4 +6,4 @@
 """
 IAL (IFS-ARPEGE & LAM:ALADIN-AROME-ALARO-HARMONIE) source code management.
 """
-__version__ = "1.3.3"
+__version__ = "1.3.4"
