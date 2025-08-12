@@ -15,7 +15,7 @@ from contextlib import contextmanager
 
 from ial_build.util import copy_files_in_cwd, now
 from ial_build.repositories import git_clone
-from . import PackError, COMPONENTS_MAP
+from . import PackError, COMPONENTS_MAP, COMPONENTS_RENAME
 from . import GmkpackTool
 from . import unsatisfied_references
 
@@ -465,7 +465,7 @@ class Pack(object):
         else:
             version = None  # this will turn component to be populated in bulk rather than as increment
         return version
-    
+
     def bundle_populate_hub_component(self,
                                       component,
                                       bundle,
@@ -489,7 +489,8 @@ class Pack(object):
                                                                  repository))
         if not self.is_incremental or self.is_incremental and config.get('incremental_pack', True):
             # main pack or incremental and package to be added in hub/local in bulk
-            pkg_dst = os.path.join(self.abspath, pkg_dst, component)
+            pkg = self.bundle_component_renamed(component, config)
+            pkg_dst = os.path.join(self.abspath, pkg_dst, pkg)
             if as_a_git_clone:
                 git_clone(repository, pkg_dst, remove_if_preexisting=True)
             else:
@@ -623,6 +624,10 @@ class Pack(object):
             destination = ''
             print(f"Destination of component '{component}' within gmkpack is unknown, it is ignored.")
         return destination
+
+    def bundle_component_renamed(self, component, config):
+        """Get package name under which gmkpack expects the package."""
+        return config.get('gmkpack_rename', COMPONENTS_RENAME.get(component, component))
 
     def _bundle_write_properties(self, projects):
         """Write info into self.origin_filepath."""

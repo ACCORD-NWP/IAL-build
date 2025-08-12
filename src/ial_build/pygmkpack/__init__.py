@@ -20,14 +20,19 @@ USUAL_BINARIES = ['masterodb',
 COMPONENTS_MAP = {'eckit':'hub/local/src/ecSDK',
                   'fckit':'hub/local/src/ecSDK',
                   'ecbuild':'hub/local/src/ecSDK',
-                  'atlas':'hub/local/src',
+                  'atlas':'hub/local/src/Atlas',
+                  'ecflow_light':'hub/local/src/ecFlow_light',
+                  'ectrans':'hub/local/src/Ectrans',
+                  'field_api':'hub/local/src/Field_api',
                   # src/local
                   'ial':'src/local',
-                  'oops_src':'src/local',
                   #'surfex':'src/local',
                   # mpa, falfi, ...
                   }
-
+# gmkpack expects certain packages under a name different from the repo name
+COMPONENTS_RENAME = {'oops':'oops_src',
+                     'ecflow-light':'ecflow_light',
+                     }
 unsatisfied_references = {
     "CY48":["imultio_flush_",
             "imultio_notify_step_",
