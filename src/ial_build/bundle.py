@@ -176,7 +176,7 @@ class IALBundle(object):
         """
         self._to_rename = {}
         for p, conf in self.projects.items():
-            if os.path.exists(self.local_project_repo(p)):
+            if 'git' in conf and os.path.exists(self.local_project_repo(p)):
                 r = GitProxy(self.local_project_repo(p))
                 req_remote_url = os.path.expanduser(os.path.expandvars(conf['git']))
                 req_remote = conf.get('remote', 'origin')
@@ -252,14 +252,14 @@ class IALBundle(object):
 
     def local_project_repo(self, project):
         """Path to locally downloaded repository of project."""
-        assert self.src_dir is not None, "Bundle has to be downloaded or 'src_dir' attribute defined." 
+        assert self.src_dir is not None, "Bundle has to be downloaded or 'src_dir' attribute defined."
         return os.path.join(self.src_dir, project)
 
     def tags_history(self):
         """Get tags' history for each project's version."""
         history = {}
         cwd = os.getcwd()
-        for p in self.projects.keys():
+        for p in [p for p in self.projects.keys() if 'git' in self.projects[p]]:
             repo = GitProxy(self.local_project_repo(p))
             history[p] = []
             for t in repo.tags_history(self.projects[p]['version']):

@@ -534,7 +534,7 @@ class Pack(object):
             subdir = subdir[2]
             print("  -> to subdirectory: src/local/{}".format(subdir))
         else:
-            if component.upper() == 'IAL':
+            if component.upper() == bundle.IAL.upper():
                 subdir = None
             else:
                 subdir = component
@@ -543,7 +543,7 @@ class Pack(object):
             pkg_parentdir = os.path.join(self.abspath, pkg_dst)
             pkg_dst = os.path.join(self.abspath, pkg_dst, component)
             git_clone(repository, pkg_dst, remove_if_preexisting=True)
-            if component.upper() == 'IAL':
+            if component.upper() == bundle.IAL.upper():
                 print("Move contents of {} to {}".format(pkg_dst, pkg_parentdir))
                 # move everything one level up
                 for a in os.listdir(pkg_dst):
@@ -605,7 +605,7 @@ class Pack(object):
         print('-' * 80)
         if not self.is_incremental:
             # symbols to be ignored
-            self.ignore_symbols_from_cycles(tags_history.get('IAL'))
+            self.ignore_symbols_from_cycles(tags_history.get(bundle.IAL))
         # log in pack
         shutil.copy(bundle.bundle_file, os.path.join(self.abspath, 'bundle.yml'))
 
