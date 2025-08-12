@@ -14,8 +14,12 @@ import sys
 import uuid
 
 from .pygmkpack import Pack, GmkpackTool
-from .config import DEFAULT_BUNDLE_CACHE_DIR, DEFAULT_IALBUNDLE_REPO
+from .config import DEFAULT_BUNDLE_CACHE_DIR, DEFAULT_IALBUNDLE_REPO, GITHUB_DEFAULT
 from .repositories import GitProxy, IALview
+
+# default value for a potential ${GITHUB} variable in bundle
+if 'GITHUB' not in os.environ:
+    os.environ['GITHUB'] = GITHUB_DEFAULT
 
 
 class IALbundleRepo(GitProxy):

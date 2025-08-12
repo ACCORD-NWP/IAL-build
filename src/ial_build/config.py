@@ -10,6 +10,7 @@ Configuration parameters.
 import os
 import re
 
+GITHUB_DEFAULT = 'https://github.com'
 IAL_OFFICIAL_TAGS_re = re.compile(r'CY(?P<release>\d{2}([TRH]\d)?)' +
                                   r'(_(?P<radical>.+)\.(?P<version>\d{2}))?$')
 IAL_OFFICIAL_PACKS_re = re.compile(r'(?P<prefix>((cy)|(CY))?)(?P<release>\d{2}([TRHtrh]\d)?)' + '_' +
