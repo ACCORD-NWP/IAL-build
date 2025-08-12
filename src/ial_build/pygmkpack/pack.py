@@ -372,8 +372,8 @@ class Pack(object):
         msg = "Populating components in pack's hub:"
         print("\n" + msg + "\n" + "=" * len(msg))
         for component, config in hub_components.items():
-            self.bundle_populate_component(component,
-                                           bundle)
+            self.bundle_populate_hub_component(component,
+                                               bundle)
         # log
         openmode = 'a' if os.path.exists(self.origin_filepath) else 'w'
         with io.open(self.origin_filepath, openmode) as f:
@@ -465,14 +465,14 @@ class Pack(object):
         else:
             version = None  # this will turn component to be populated in bulk rather than as increment
         return version
-
-    def bundle_populate_component(self,
-                                  component,
-                                  bundle,
-                                  as_a_git_clone=True,
-                                  filter_file=None):
+    
+    def bundle_populate_hub_component(self,
+                                      component,
+                                      bundle,
+                                      as_a_git_clone=True,
+                                      filter_file=None):
         """
-        Populate src/local or hub/bundle in incr pack from bundle.
+        Populate hub with 'component' from bundle.
 
         :param bundle: the ial_build.bundle.IALBundle object.
         :param as_a_git_clone: if True, populates as a git clone
@@ -482,72 +482,86 @@ class Pack(object):
         config = bundle.projects[component]
         pkg_dst = self.bundle_component_destination(component, config)
         repository = bundle.local_project_repo(component)
-        if pkg_dst.startswith('hub'):
-            # packages auto-compiled, in hub
-            print("\n* '{}' ({}) from repo: {} via cache: {}".format(component,
-                                                                     config['version'],
-                                                                     config['git'],
-                                                                     repository))
-            if not self.is_incremental or self.is_incremental and config.get('incremental_pack', True):
-                # main pack or incremental and package to be added in hub/local in bulk
-                pkg_dst = os.path.join(self.abspath, pkg_dst, component)
-                if as_a_git_clone:
-                    git_clone(repository, pkg_dst, remove_if_preexisting=True)
-                else:
-                    if os.path.exists(pkg_dst):
-                        shutil.rmtree(pkg_dst)
-                    shutil.copytree(repository, pkg_dst, symlinks=True)
-                print(" ... package populated.")
-                if self.is_incremental:
-                    print("(Package populated in bulk : incremental hub packages is currently not available. " +
-                          "To deactivate package population in incremental packs, set bundle key: " +
-                          "incremental_pack = False (default:True).)")
-                    # edit hub/.gmkview to account priorily for local packages
-                    os.remove(self._hub_gmkview_file)
-                    with open(self._hub_gmkview_file, 'w') as hgf:
-                        hgf.writelines(['local\n', 'main'])
-            else:
-                # incremental pack and package ignored
-                print(" ... package ignored (bundle: incremental_pack = False).")
-        elif pkg_dst.startswith('src/local'):
-            # components to be compiled with gmkpack, in src/local
-            print("\n* Component: '{}' ({}) from repo: {} via cache: {}".format(component,
-                                                                                config['version'],
-                                                                                config['git'],
-                                                                                repository))
-            subdir = pkg_dst.split(os.path.sep)
-            if len(subdir) > 2:
-                subdir = subdir[2]
-                print("  -> to subdirectory: src/local/{}".format(subdir))
-            else:
-                if component.upper() == 'IAL':
-                    subdir = None
-                else:
-                    subdir = component
-            if not self.is_incremental or self.bundle_initial_version_of_component(component) is None:
-                # main pack, or not able to determine an increment: bulk
-                pkg_parentdir = os.path.join(self.abspath, pkg_dst)
-                pkg_dst = os.path.join(self.abspath, pkg_dst, component)
+        # packages auto-compiled, in hub
+        print("\n* '{}' ({}) from repo: {} via cache: {}".format(component,
+                                                                 config['version'],
+                                                                 config['git'],
+                                                                 repository))
+        if not self.is_incremental or self.is_incremental and config.get('incremental_pack', True):
+            # main pack or incremental and package to be added in hub/local in bulk
+            pkg_dst = os.path.join(self.abspath, pkg_dst, component)
+            if as_a_git_clone:
                 git_clone(repository, pkg_dst, remove_if_preexisting=True)
-                if component.upper() == 'IAL':
-                    print("Move contents of {} to {}".format(pkg_dst, pkg_parentdir))
-                    # move everything one level up
-                    for a in os.listdir(pkg_dst):
-                        shutil.move(os.path.join(pkg_dst, a), os.path.join(pkg_parentdir, a))
-                    os.rmdir(pkg_dst)
-                # filter a posteriori
-                # if filter_file is specified in bundle: special syntax
-                in_repo = re.match(self._filter_file_in_repo_re, filter_file)
-                if in_repo:
-                    filter_file = os.path.join(pkg_parentdir, in_repo.group('file'))
-                to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
-                self.filter_sources_a_posteriori(to_be_filtered)
             else:
-                # incremental pack
-                self._populate_from_repo_as_incremental_component(repository,
-                                                                  self.bundle_initial_version_of_component(component),
-                                                                  subdir=subdir)
-                print("  ! Incremental source update: no filtering.")
+                if os.path.exists(pkg_dst):
+                    shutil.rmtree(pkg_dst)
+                shutil.copytree(repository, pkg_dst, symlinks=True)
+            print(" ... package populated.")
+            if self.is_incremental:
+                print("(Package populated in bulk : incremental hub packages is currently not available. " +
+                      "To deactivate package population in incremental packs, set bundle key: " +
+                        "incremental_pack = False (default:True).)")
+                # edit hub/.gmkview to account priorily for local packages
+                os.remove(self._hub_gmkview_file)
+                with open(self._hub_gmkview_file, 'w') as hgf:
+                    hgf.writelines(['local\n', 'main'])
+        else:
+            # incremental pack and package ignored
+            print(" ... package ignored (bundle: incremental_pack = False).")
+
+    def bundle_populate_gmkpack_component(self,
+                                          component,
+                                          bundle,
+                                          as_a_git_clone=True,
+                                          filter_file=None):
+        """
+        Populate src/local with component from bundle.
+
+        :param bundle: the ial_build.bundle.IALBundle object.
+        :param as_a_git_clone: if True, populates as a git clone
+        :param filter_file: file in which to read the files to be
+            filtered at populate time.
+        """
+        config = bundle.projects[component]
+        pkg_dst = self.bundle_component_destination(component, config)
+        repository = bundle.local_project_repo(component)
+        print("\n* Component: '{}' ({}) from repo: {} via cache: {}".format(component,
+                                                                            config['version'],
+                                                                            config['git'],
+                                                                            repository))
+        subdir = pkg_dst.split(os.path.sep)
+        if len(subdir) > 2:
+            subdir = subdir[2]
+            print("  -> to subdirectory: src/local/{}".format(subdir))
+        else:
+            if component.upper() == 'IAL':
+                subdir = None
+            else:
+                subdir = component
+        if not self.is_incremental or self.bundle_initial_version_of_component(component) is None:
+            # main pack, or not able to determine an increment: bulk
+            pkg_parentdir = os.path.join(self.abspath, pkg_dst)
+            pkg_dst = os.path.join(self.abspath, pkg_dst, component)
+            git_clone(repository, pkg_dst, remove_if_preexisting=True)
+            if component.upper() == 'IAL':
+                print("Move contents of {} to {}".format(pkg_dst, pkg_parentdir))
+                # move everything one level up
+                for a in os.listdir(pkg_dst):
+                    shutil.move(os.path.join(pkg_dst, a), os.path.join(pkg_parentdir, a))
+                os.rmdir(pkg_dst)
+            # filter a posteriori
+            # if filter_file is specified in bundle: special syntax
+            in_repo = re.match(self._filter_file_in_repo_re, filter_file)
+            if in_repo:
+                filter_file = os.path.join(pkg_parentdir, in_repo.group('file'))
+            to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
+            self.filter_sources_a_posteriori(to_be_filtered)
+        else:
+            # incremental pack
+            self._populate_from_repo_as_incremental_component(repository,
+                                                              self.bundle_initial_version_of_component(component),
+                                                              subdir=subdir)
+            print("  ! Incremental source update: no filtering.")
 
     def bundle_populate(self,
                         bundle,
@@ -570,8 +584,8 @@ class Pack(object):
         msg = "Populating components in pack's hub:"
         print("\n" + msg + "\n" + "=" * len(msg))
         for component, config in hub_components.items():
-            self.bundle_populate_component(component,
-                                           bundle)
+            self.bundle_populate_hub_component(component,
+                                               bundle)
         # then src/local components:
         print("Clean src/local")
         shutil.rmtree(self._local)
@@ -585,9 +599,9 @@ class Pack(object):
             else:
                 # otherwise, taken from IAL-build (old way)
                 filter_file = self._configfile_for_sources_filtering(component, tags_history[component])
-            self.bundle_populate_component(component,
-                                           bundle,
-                                           filter_file=filter_file)
+            self.bundle_populate_gmkpack_component(component,
+                                                   bundle,
+                                                   filter_file=filter_file)
         print('-' * 80)
         if not self.is_incremental:
             # symbols to be ignored
@@ -605,10 +619,9 @@ class Pack(object):
         - no build system, or not plugged in gmkpack: project
         """
         destination = config.get('gmkpack', COMPONENTS_MAP.get(component.lower(), None))
-        assert destination is not None, ' '.join(["Destination of component '{}' within gmkpack is unknown,",
-                                                  "please indicate in bundle file through attribute 'gmkpack',",
-                                                  "e.g. gmkpack = src/local/oops or",
-                                                  "hub/local/src/ecSDK"]).format(component)
+        if not (destination.startswith('hub') or destination.startswith('src/local')):
+            destination = ''
+            print(f"Destination of component '{component}' within gmkpack is unknown, it is ignored.")
         return destination
 
     def _bundle_write_properties(self, projects):
