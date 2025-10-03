@@ -550,13 +550,15 @@ class Pack(object):
                 for a in os.listdir(pkg_dst):
                     shutil.move(os.path.join(pkg_dst, a), os.path.join(pkg_parentdir, a))
                 os.rmdir(pkg_dst)
+                pkg_dst = pkg_parentdir
             # filter a posteriori
             # if filter_file is specified in bundle: special syntax
-            in_repo = re.match(self._filter_file_in_repo_re, filter_file)
-            if in_repo:
-                filter_file = os.path.join(pkg_parentdir, in_repo.group('file'))
-            to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
-            self.filter_sources_a_posteriori(to_be_filtered)
+            if filter_file is not None:
+                in_repo = re.match(self._filter_file_in_repo_re, filter_file)
+                if in_repo:
+                    filter_file = os.path.join(pkg_dst, in_repo.group('file'))
+                to_be_filtered = self.prepare_sources_filter(filter_file, subdir=subdir)
+                self.filter_sources_a_posteriori(to_be_filtered)
         else:
             # incremental pack
             self._populate_from_repo_as_incremental_component(repository,
