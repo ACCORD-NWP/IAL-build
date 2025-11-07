@@ -28,7 +28,8 @@ def IALgitref2pack(IAL_git_ref,
                    compiler_label=None,
                    compiler_flag=None,
                    homepack=None,
-                   rootpack=None):
+                   rootpack=None,
+                   check_coding_norms=False):
     """
     Make a pack out of an **IAL_git_ref** within an **IAL_repo_path** repository.
     If IAL_git_ref==None, take the currently checkedout ref.
@@ -46,8 +47,10 @@ def IALgitref2pack(IAL_git_ref,
     :param compiler_label: Gmkpack's compiler label to be used
     :param compiler_flag: Gmkpack's compiler flag to be used
     :param homepack: directory in which to build pack
-    :param rootpack: diretory in which to look for root pack (incr packs only)
+    :param rootpack: directory in which to look for root pack (incr packs only)
+    :param check_coding_norms: run gmkpack's code norm checker (incr packs only)
     """
+
     view = IALview(IAL_repo_path, IAL_git_ref)
     s = "Exporting '{}' to pack...".format(view.ref)
     print(s)
@@ -93,6 +96,16 @@ def IALgitref2pack(IAL_git_ref,
     elif pack_type == 'incr':
         pack.populate_from_IALview_as_incremental(view)
     print("Pack successfully populated: " + pack.abspath)
+
+    # check coding norms
+    coding_norms={}
+    if pack_type == 'incr':
+      if check_coding_norms:
+          coding_norms['local']=pack.check_coding_norms(local=True)
+          coding_norms['main']=pack.check_coding_norms(local=False)
+          print("Coding norms checked")
+      with open('coding_norms.json', 'w') as out:
+          json.dump(coding_norms, out)
     return pack
 
 
@@ -233,12 +246,14 @@ def pack_build_executables(pack,
                 print("-> compilation output: {}".format(compile_output['Output']))
         print("-" * 50)
         build_report['compilation'] = compile_output
+        
     # Executables
     if not pack.is_incremental:
         # pack main: assume compilation and libs ok from ics_ and skip updates
         other_options = copy.copy(other_options)
         other_options['no_compilation'] = True
         other_options['no_libs_update'] = True
+
     for program in programs:
         print("-" * 50)
         print("Build: {} ...".format(program))
