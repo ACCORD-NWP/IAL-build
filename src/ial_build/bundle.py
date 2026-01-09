@@ -159,6 +159,9 @@ class IALBundle(object):
             self.ID = os.path.basename(bundle_file)
         else:
             self.ID = ID
+        # if bundle is in IAL:bundle/ then IAL_DIR must be set, by default to the above directory
+        if 'IAL_DIR' not in os.environ:
+            os.environ['IAL_DIR'] = os.path.dirname(os.path.dirname(os.path.abspath(self.bundle_file)))
         self.ecbundle = Bundle(self.bundle_file)
         self.projects = {}
         for project in self.ecbundle.get('projects'):
@@ -275,6 +278,32 @@ class IALBundle(object):
         with io.open(self.bundle_file, 'r') as b:
             f.writelines(b.readlines())
 
+    def project_version(self, project):
+        if 'version' in self.projects[project]:
+            return self.projects[project]['version']
+        else:
+            # bundle is in IAL repo, project is a link to a local dir and ref is currently checkedout
+            return subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+                                           cwd=self.local_project_repo(project)).strip().decode()
+
+    def project_origin(self, project):
+        config = self.projects[project]
+        if 'git' in config:
+            origin = config['git']
+        elif 'dir' in config:
+            origin = config['dir']
+        else:
+            raise KeyError("Project attributes must contain either 'git' or 'dir' attribute.")
+        return os.path.expanduser(os.path.expandvars(origin))
+
+    @property
+    def IAL_repo_path(self):
+        return self.local_project_repo(self.IAL)  # no need to check it has been downloaded, only useful in certain cases
+
+    @property
+    def IAL_git_ref(self):
+        return self.project_version(self.IAL)
+
 # gmkpack binding -------------------------------------------------------------
 
     def gmkpack_guess_pack_name(self,
@@ -294,11 +323,9 @@ class IALBundle(object):
         :param homepack: home of pack
         :param to_bin: True if the path to binaries subdirectory is requested
         """
-        IAL_git_ref = self.projects[self.IAL]['version']
-        IAL_repo_path = self.local_project_repo(self.IAL)  # no need to check it has been downloaded, only useful in certain cases
-        packname = GmkpackTool.guess_pack_name(IAL_git_ref, compiler_label, compiler_flag,
+        packname = GmkpackTool.guess_pack_name(self.IAL_git_ref, compiler_label, compiler_flag,
                                                pack_type=pack_type,
-                                               IAL_repo_path=IAL_repo_path)
+                                               IAL_repo_path=self.IAL_repo_path)
         # finalisation
         path_elements = [packname]
         if abspath:
@@ -324,12 +351,10 @@ class IALBundle(object):
         :param silent: to hide gmkpack's stdout
         """
         # prepare IAL arguments for gmkpack
-        IAL_git_ref = self.projects[self.IAL]['version']
         assert self.downloaded, "Bundle projects to be downloaded before creation of pack."
-        IAL_repo_path = self.local_project_repo(self.IAL)
         args = GmkpackTool.getargs(pack_type,
-                                   IAL_git_ref,
-                                   IAL_repo_path,
+                                   self.IAL_git_ref,
+                                   self.IAL_repo_path,
                                    compiler_label=compiler_label,
                                    compiler_flag=compiler_flag,
                                    homepack=homepack,

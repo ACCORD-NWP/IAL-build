@@ -96,7 +96,7 @@ def get_args():
                         default='')
     parser.add_argument('-d', '--cache_directory',
                         help='Cache directory: where git repos are downloaded/updated before populating pack. ' +
-                             'Defaults to $HOME/bundles: ' + DEFAULT_BUNDLE_CACHE_DIR,
+                             'Defaults to: ' + DEFAULT_BUNDLE_CACHE_DIR,
                         default=DEFAULT_BUNDLE_CACHE_DIR)
     parser.add_argument('--homepack',
                         default=GmkpackTool.get_homepack(),

@@ -484,8 +484,8 @@ class Pack(object):
         repository = bundle.local_project_repo(component)
         # packages auto-compiled, in hub
         print("\n* '{}' ({}) from repo: {} via cache: {}".format(component,
-                                                                 config['version'],
-                                                                 config['git'],
+                                                                 bundle.project_version(component),
+                                                                 bundle.project_origin(component),
                                                                  repository))
         if not self.is_incremental or self.is_incremental and config.get('incremental_pack', True):
             # main pack or incremental and package to be added in hub/local in bulk
@@ -527,8 +527,8 @@ class Pack(object):
         pkg_dst = self.bundle_component_destination(component, config)
         repository = bundle.local_project_repo(component)
         print("\n* Component: '{}' ({}) from repo: {} via cache: {}".format(component,
-                                                                            config['version'],
-                                                                            config['git'],
+                                                                            bundle.project_version(component),
+                                                                            bundle.project_origin(component),
                                                                             repository))
         subdir = pkg_dst.split(os.path.sep)
         if len(subdir) > 2:
@@ -631,16 +631,6 @@ class Pack(object):
         """Get package name under which gmkpack expects the package."""
         return config.get('gmkpack_rename', COMPONENTS_RENAME.get(component, component))
 
-    def _bundle_write_properties(self, projects):
-        """Write info into self.origin_filepath."""
-        openmode = 'a' if os.path.exists(self.origin_filepath) else 'w'
-        with io.open(self.origin_filepath, openmode) as f:
-            f.write("\n{} --- populate from bundle successful with:\n".format(now()))
-            for project, config in projects.items():
-                f.write("* {}\n".format(project))
-                f.write("    version: {}\n".format(config['version']))
-                f.write("    from remote git: {}\n".format(config['git']))
-
 # Filters ---------------------------------------------------------------------
 
     @property
@@ -722,6 +712,8 @@ class Pack(object):
         List of symbols picked up from pygmkpack.unsatisfied_references according to given cycles (in reverse order).
         """
         symbols = []
+        if cycles is None:
+            cycles = sorted(unsatisfied_references.keys())
         for c in cycles[::-1]:
             if c in unsatisfied_references.keys():
                 self.ignore_symbols(unsatisfied_references[c])

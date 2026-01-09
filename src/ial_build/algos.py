@@ -13,7 +13,6 @@ from .repositories import IALview, GitProxy
 from .pygmkpack import (Pack, PackError, GmkpackTool,
                         USUAL_BINARIES)
 from .bundle import IALBundle, TmpIALbundleRepo
-from .config import DEFAULT_IAL_REPO, DEFAULT_BUNDLE_CACHE_DIR
 
 
 def IALgitref2pack(IAL_git_ref,

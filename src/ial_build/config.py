@@ -22,7 +22,7 @@ IAL_BRANCHES_re = re.compile(r'_'.join([r'(?P<user>\w+)',
                                         r'(?P<radical>.+)$']))
 IAL_DOC_OUTPUT_DIR = os.path.join(os.environ['HOME'], 'tmp','prep_doc')
 
-DEFAULT_BUNDLE_CACHE_DIR = os.path.join(os.environ['HOME'], 'bundles')
+DEFAULT_BUNDLE_CACHE_DIR = os.path.join(os.environ['HOME'], 'ial-bundle_cache')
 
 # default repository for IAL
 DEFAULT_IAL_REPO = os.environ.get('DEFAULT_IAL_REPO')
