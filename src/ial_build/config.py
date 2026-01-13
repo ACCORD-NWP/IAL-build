@@ -35,6 +35,7 @@ if DEFAULT_IALBUNDLE_REPO in ('', None):
     DEFAULT_IALBUNDLE_REPO = 'https://github.com/ACCORD-NWP/IAL-bundle.git'
 # default gmkpack compiler flag
 DEFAULT_PACK_COMPILER_FLAG = os.environ.get('GMK_OPT', 'x')
+DEFAULT_BUNDLE_RELPATH = 'bundle/bundle.yml'
 
 # hosts recognition
 hosts_re = {

@@ -305,13 +305,14 @@ class Pack(object):
         with self._cd_local(subdir=subdir):
             copy_files_in_cwd(list_of_files, directory_abspath)
 
-    def populate_from_IALview_as_main(self, view):
+    def populate_from_IALview_as_main(self, view, filter_file=None):
         """
         Populate main pack with contents from a IALview.
         """
         from ial_build.repositories import IALview
         assert isinstance(view, IALview)
-        filter_file = self._configfile_for_sources_filtering('IAL', view.tags_history)
+        if filter_file is None:
+            filter_file = self._configfile_for_sources_filtering('IAL', view.tags_history)
         msg = "Populating main pack with: '{}'".format(view.ref)
         print('\n' + msg + '\n' + '=' * len(msg))
         self._populate_from_repo_in_bulk(view.repository, filter_file=filter_file)

@@ -284,7 +284,7 @@ class IALBundle(object):
         else:
             # bundle is in IAL repo, project is a link to a local dir and ref is currently checkedout
             return subprocess.check_output(['git', 'rev-parse', 'HEAD'],
-                                           cwd=self.local_project_repo(project)).strip().decode()
+                                           cwd=self.local_project_repo(project)).strip().decode()[:8]
 
     def project_origin(self, project):
         config = self.projects[project]

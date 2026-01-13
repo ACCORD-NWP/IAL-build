@@ -13,6 +13,81 @@ from .repositories import IALview, GitProxy
 from .pygmkpack import (Pack, PackError, GmkpackTool,
                         USUAL_BINARIES)
 from .bundle import IALBundle, TmpIALbundleRepo
+from .config import DEFAULT_BUNDLE_RELPATH
+
+
+def IAL2pack(IAL_git_ref,
+             IAL_repo_path,
+             bundle_relpath=DEFAULT_BUNDLE_RELPATH,
+             bundle_cache_dir=None,
+             bundle_update=True,
+             pack_type='incr',
+             preexisting_pack=False,
+             clean_if_preexisting=False,
+             compiler_label=None,
+             compiler_flag=None,
+             homepack=None,
+             rootpack=None):
+    """
+    Make a pack out of an **IAL_git_ref** within an **IAL_repo_path** repository, post CY50T2 (bundle in IAL).
+    If IAL_git_ref==None, take the currently checkedout ref.
+    If necessary, the IAL bundle will be taken from the repo relative path **bundle_relpath**
+
+    :param bundle_relpath: relative path to the bundle in the IAL repo.
+    :param bundle_cache_dir: cache directory in which to download/update repositories for the hub
+    :param bundle_update: if bundle repositories are to be updated/checkedout
+    :param pack_type: type of pack, among ('incr', 'main')
+    :param preexisting_pack: assume the pack already preexists
+    :param clean_if_preexisting: if True, call cleanpack before populating a preexisting pack
+    :param compiler_label: Gmkpack's compiler label to be used
+    :param compiler_flag: Gmkpack's compiler flag to be used
+    :param homepack: directory in which to build pack
+    :param rootpack: diretory in which to look for root pack (incr packs only)
+    """
+    view = IALview(IAL_repo_path, IAL_git_ref)
+    s = "Exporting '{}' to pack...".format(view.ref)
+    print(s)
+    print("=" * len(s))
+    # pack
+    if not preexisting_pack:
+        args = GmkpackTool.getargs(pack_type,
+                                   view.ref,  # and not IAL_git_ref because None will end up in currently checkedout
+                                   IAL_repo_path,
+                                   compiler_label=compiler_label,
+                                   compiler_flag=compiler_flag,
+                                   homepack=homepack,
+                                   rootpack=rootpack)
+        try:
+            pack = GmkpackTool.create_pack_from_args(args, pack_type)
+        except Exception:
+            print("Creation of pack failed !")
+            raise
+    else:
+        packname = GmkpackTool.guess_pack_name(view.ref, compiler_label, compiler_flag,
+                                               pack_type=pack_type,
+                                               IAL_repo_path=IAL_repo_path)
+        pack = Pack(packname,
+                    homepack=GmkpackTool.get_homepack(homepack))
+        if clean_if_preexisting:
+            pack.cleanpack()
+    # bundle
+    bundle_abspath = os.path.join(IAL_repo_path, bundle_relpath)
+    hub_bundle = IALBundle(bundle_abspath)
+    if pack_type == 'main' or any([p.get('incremental_pack', False) for p in hub_bundle.projects.values()]):
+        print(f"Populate pack hub using bundle: {bundle_abspath} ...")
+        hub_bundle.download(src_dir=bundle_cache_dir,
+                            update=bundle_update)
+        pack.populate_hub_from_bundle(hub_bundle)
+    # then populate
+    if pack_type == 'main':
+        filter_file = hub_bundle.projects[hub_bundle.IAL].get('gmkpack_filter_file', None)
+        if filter_file is not None:
+            filter_file = os.path.join(IAL_repo_path, filter_file)
+        pack.populate_from_IALview_as_main(view, filter_file=filter_file)
+    elif pack_type == 'incr':
+        pack.populate_from_IALview_as_incremental(view)
+    print("Pack successfully populated: " + pack.abspath)
+    return pack
 
 
 def IALgitref2pack(IAL_git_ref,
