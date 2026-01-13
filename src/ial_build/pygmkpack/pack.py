@@ -4,6 +4,7 @@
 Python handling of a pack.
 """
 
+import json
 import os
 import re
 import subprocess
@@ -835,6 +836,60 @@ class Pack(object):
                 for f in files:
                     t.add(f)
         return tar_filename
+
+# Norms checker-------------------------------------------------------------
+    def check_coding_norms(self,local=True):
+        """ Check coding norms of pack contents. """
+
+        # get list of include directories (needed by gmkpack norms checker)
+        with open(os.path.join(self.abspath, 'src', '.incpath'),'rt') as fid:
+            incdirs = fid.read().replace('\n',':').replace('-I','')
+
+        # get list of files in src/local/
+        sourcefiles = self.scanpack()
+
+        if local:
+            # add src/local to sourcefiles
+            sourcefiles = [os.path.join(self.abspath, 'src', 'local', ff) for ff in sourcefiles]
+        else:
+            sourcefiles = [os.path.join(self.abspath, 'src', 'main', ff) for ff in sourcefiles]
+
+        # set environment
+        myenv = os.environ.copy()
+        myenv['VPATH'] = incdirs
+        myenv['INTFBDIR'] = '.'  # already in VPATH, but for some reason this can't be empty
+
+        # run norms checker
+        cmd = [os.path.join(myenv['GMKROOT'], 'aux', 'check_norm_2011.pl')] + sourcefiles
+        check_norm_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=myenv).decode('utf-8').split('\n')
+
+        # parse output
+        jLine = 0
+        violations = {}
+        while jLine < len(check_norm_output):
+            # check if this line marks a violation
+            if check_norm_output[jLine].startswith('  -- ('):
+                jLine2 = jLine-1
+                # identify violating source file
+                jLine2 = jLine-1
+                sourceFile = check_norm_output[jLine2].split('[')[0]
+                # actually might be earlier line ...
+                while sourceFile.startswith(' '):
+                    jLine2 = jLine2-1
+                    sourceFile = check_norm_output[jLine2].split('[')[0]
+                # identify norm violated
+                violatedNorm = check_norm_output[jLine][5:]
+                # add to list
+                if sourceFile not in violations:
+                    violations[sourceFile] = {}
+                if violatedNorm in violations[sourceFile]:
+                    violations[sourceFile][violatedNorm] = violations[sourceFile][violatedNorm] + 1
+                else:
+                    violations[sourceFile][violatedNorm] = 1
+          # goto next line
+          jLine = jLine + 1
+
+        return violations
 
 # Others -------------------------------------------------------------------
 
