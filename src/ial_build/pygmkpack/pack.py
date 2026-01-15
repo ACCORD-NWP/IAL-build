@@ -886,8 +886,8 @@ class Pack(object):
                     violations[sourceFile][violatedNorm] = violations[sourceFile][violatedNorm] + 1
                 else:
                     violations[sourceFile][violatedNorm] = 1
-          # goto next line
-          jLine = jLine + 1
+            # goto next line
+            jLine = jLine + 1
 
         return violations
 
