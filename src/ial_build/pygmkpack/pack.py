@@ -846,7 +846,11 @@ class Pack(object):
             incdirs = fid.read().replace('\n',':').replace('-I','')
 
         # get list of files in src/local/
-        sourcefiles = self.scanpack()
+        try:
+            sourcefiles = self.scanpack()
+        except CalledProcessError:
+            print("Warning: unable to scan pack")
+            return {'Warning':'Cannot analyse coding norms'}
 
         if local:
             # add src/local to sourcefiles
