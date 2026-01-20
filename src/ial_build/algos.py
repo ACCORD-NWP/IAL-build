@@ -27,7 +27,8 @@ def IAL2pack(IAL_git_ref,
              compiler_label=None,
              compiler_flag=None,
              homepack=None,
-             rootpack=None):
+             rootpack=None,
+             check_coding_norms=False):
     """
     Make a pack out of an **IAL_git_ref** within an **IAL_repo_path** repository, post CY50T2 (bundle in IAL).
     If IAL_git_ref==None, take the currently checkedout ref.
@@ -43,6 +44,7 @@ def IAL2pack(IAL_git_ref,
     :param compiler_flag: Gmkpack's compiler flag to be used
     :param homepack: directory in which to build pack
     :param rootpack: diretory in which to look for root pack (incr packs only)
+    :param check_coding_norms: run gmkpack's code norm checker (incr packs only)
     """
     view = IALview(IAL_repo_path, IAL_git_ref)
     s = "Exporting '{}' to pack...".format(view.ref)
@@ -87,6 +89,17 @@ def IAL2pack(IAL_git_ref,
     elif pack_type == 'incr':
         pack.populate_from_IALview_as_incremental(view)
     print("Pack successfully populated: " + pack.abspath)
+
+    # check coding norms
+    coding_norms={}
+    if pack_type == 'incr':
+      if check_coding_norms:
+          print("Check coding norms...")
+          coding_norms['local']=pack.check_coding_norms(local=True)
+          coding_norms['main']=pack.check_coding_norms(local=False)
+          print("Coding norms checked")
+      with open('coding_norms.json', 'w') as out:
+          json.dump(coding_norms, out)
     return pack
 
 
@@ -175,6 +188,7 @@ def IALgitref2pack(IAL_git_ref,
     coding_norms={}
     if pack_type == 'incr':
       if check_coding_norms:
+          print("Check coding norms...")
           coding_norms['local']=pack.check_coding_norms(local=True)
           coding_norms['main']=pack.check_coding_norms(local=False)
           print("Coding norms checked")
