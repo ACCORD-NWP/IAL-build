@@ -12,6 +12,8 @@ from ial_build.config import DEFAULT_BUNDLE_CACHE_DIR, DEFAULT_IALBUNDLE_REPO
 
 
 def main():
+    deprecation_msg = "THIS TOOL IS DEPRECATED FROM CY50T2 ONWARDS. PLEASE USE ial-to_pack INSTEAD FOR CYCLES >= 50T2"
+    print(deprecation_msg)
     args = get_args()
     if os.path.exists(args.bundle):
         pack = bundle_file2pack(args.bundle,
@@ -45,6 +47,7 @@ def main():
             pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
     if pack.ics_available_for('packages'):
         pack.ics_tune('packages', GMK_THREADS=int(args.threads_number))
+    print(deprecation_msg)
 
 def get_args():
     parser = argparse.ArgumentParser(description='Make or populate a pack from a bundle.')

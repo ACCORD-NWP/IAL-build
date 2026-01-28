@@ -14,6 +14,8 @@ from ial_build.config import (DEFAULT_IAL_REPO,
 
 
 def main():
+    deprecation_msg = "THIS TOOL IS DEPRECATED FROM CY50T2 ONWARDS. PLEASE USE ial-to_pack INSTEAD FOR CYCLES >= 50T2"
+    print(deprecation_msg)
     args = get_args()
     pack = IALgitref2pack(args.git_ref,
                           args.repository,
@@ -35,6 +37,7 @@ def main():
             pack.ics_tune(p, GMK_THREADS=int(args.threads_number))
     if pack.ics_available_for('packages'):
         pack.ics_tune('packages', GMK_THREADS=int(args.threads_number))
+    print(deprecation_msg)
 
 def get_args():
     parser = argparse.ArgumentParser(description='Make or populate a pack from Git.')
