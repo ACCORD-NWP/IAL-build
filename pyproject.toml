@@ -10,7 +10,7 @@ authors = [
     { name = "Alexandre Mary" , email = "alexandre.mary@meteo.fr"}
     ]
 dependencies = [
-      "ecbundle",
+      "ecbundle>=2.4.0",
       ]
 
 [project.urls]
