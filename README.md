@@ -10,13 +10,14 @@ It provides a python package to do so, as well as a set of command-line tools.
 Dependencies
 ------------
 
-* `ecbundle` : https://github.com/ecmwf/ecbundle --- (quick install: `pip3 install --user git+https://github.com/ecmwf/ecbundle`)
-* Some functionalities may also clone and use [IAL-bundle](https://github.com/ACCORD-NWP/IAL-bundle), especially for the research of "official" bundles for main cycles. If you don't have internet connection at time of use, you may have to specify a local, pre-cloned, origin repository for IAL-bundle, using env variable `DEFAULT_IALBUNDLE_REPO`, e.g. `DEFAULT_IALBUNDLE_REPO=~/repositories/IAL-bundle`, or specifying it using command-line options, cf. help with option `-h`.
+* `ecbundle` : https://github.com/ecmwf/ecbundle (available on PyPI)
+* Some (deprecated from CY50T2 onwards) functionalities may also clone and use [IAL-bundle](https://github.com/ACCORD-NWP/IAL-bundle), especially for the research of "official" bundles for main cycles.
+  If you don't have internet connection at time of use, you may have to specify a local, pre-cloned, origin repository for IAL-bundle, using env variable `DEFAULT_IALBUNDLE_REPO`, e.g. `DEFAULT_IALBUNDLE_REPO=~/repositories/IAL-bundle`, or specifying it using command-line options, cf. help with option `-h`.
 
 Installation
 ------------
 
-`pip install ial-build`
+`pip install ial_build`
 
 Documentation
 -------------
@@ -31,12 +32,28 @@ Tools
 
 When installed with `pip`, a bunch of `ial-*` commands are available in order to :
 * help finding bundles (`ial-find_bundle`, `ial-get_bundle`)
-* make packs (gmkpack) from bundles or IAL branches (`ial-git2pack`, `ial-bundle2pack`).
+* make packs (gmkpack) from bundles or IAL branches (`ial-to_pack`, `ial-git2pack`, `ial-bundle2pack`).
 They are auto-documented, see their argument `-h`.
 
 Some examples:
 
-### Prepare a bundle for a personal branch
+### From CY50T2 onwards, create a pack from IAL
+
+From CY50T2 onwards, the bundle is included in IAL repo, making obsolete the bundle-specific tools.
+They are left for use with cycles < CY50T2 only.
+The only relevant tool therefore is `ial-to_pack`.
+
+```
+ial-to_pack [<IAL_git_ref>] [-t main|incr]
+```
+
+Notes:
+* If `<IAL_git_ref>` is not provided, the currently checkedout reference is taken.
+* The hub sub-packages are taken from `bundle/bundle.yml` in IAL, or specified otherwise by command-line argument.
+
+### PRIOR to CY50T2
+
+#### Prepare a bundle for a personal branch
 
 * Find a bundle appropriate for my IAL branch <my_branch>, based on CY50:
   ```
@@ -56,7 +73,7 @@ Some examples:
   % ial-bundle2pack my_bundle.yml [...pack creation arguments, cf. -h]
   ```
 
-### Install a root pack of `BDL50-default`
+#### Install a root pack of `BDL50-default`
 
 ```
 ial-bundle2pack BDL50-default
@@ -68,7 +85,7 @@ will:
 * create a pack (by default: main)
 * populate the pack with the source codes checkedout for each package
 
-### Install a root(=main) pack for the recommended (default) bundle for CY50
+#### Install a root(=main) pack for the recommended (default) bundle for CY50
 
 ```
 ial-git2pack -t main CY50 [...]
@@ -77,12 +94,12 @@ will:
 * find a bundle appropriate for CY50 in IAL-bundle repository
 * then do the same as `ial-bundle2pack`
 
-### Install an incremental pack with the content of my IAL branch on top of its most recent official ancestor pack
+#### Install an incremental pack with the content of my IAL branch on top of its most recent official ancestor pack
 ```
 ial-git2pack my_branch
 ```
 
-### Install a pack with a modified branch in `oops` only
+#### Install a pack with a modified branch in `oops` only
 
 1. get a local copy of a bundle file that fits the basis of your development, e.g.
   ```
