@@ -848,7 +848,7 @@ class Pack(object):
         # get list of files in src/local/
         try:
             sourcefiles = self.scanpack()
-        except CalledProcessError:
+        except subprocess.CalledProcessError:
             print("Warning: unable to scan pack")
             return {'Warning':'Cannot analyse coding norms'}
 
