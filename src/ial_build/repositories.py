@@ -210,23 +210,27 @@ class GitProxy(object):
         refs = []
         for h, r in list_of_refs:
             if r.startswith('refs/remotes'):
+                remote = r.split('/')[2]
                 if r.endswith('/HEAD'):
                     refs.append({'ref':r.split('/')[3],
                                  'hash':h,
                                  'rtype':'HEAD',
-                                 'remote':r.split('/')[2]})
+                                 'remote':remote})
                 else:
-                    refs.append({'ref':r.split('/')[3],
+                    s = '/'.join(['refs/remotes', remote])
+                    refs.append({'ref':r[len(s)+1:],
                                  'hash':h,
                                  'rtype':'branch',
-                                 'remote':r.split('/')[2]})
+                                 'remote':remote})
             elif r.startswith('refs/heads'):
-                refs.append({'ref':r.split('/')[2],
+                s = 'refs/heads'
+                refs.append({'ref':r[len(s)+1:],
                              'hash':h,
                              'rtype':'branch',
                              'remote':None})
             elif r.startswith('refs/tags'):
-                refs.append({'ref':r.split('/')[2],
+                s = 'refs/tags'
+                refs.append({'ref':r[len(s)+1:],
                              'hash':h,
                              'rtype':'tag',
                              'remote':None})
