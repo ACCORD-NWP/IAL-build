@@ -366,6 +366,6 @@ class GmkpackTool(object):
         pack = Pack(packname, preexisting=False, homepack=args.get('-h'))
         if os.path.exists(pack.abspath):
             raise PackError('Pack already exists, cannot create: {}'.format(pack.abspath))
-        options = ['-a', '-K'] if pack_type == 'main' else []
+        options = ['-a', '-K'] if pack_type == 'main' else ['-K']
         cls.commandline(args, options, silent=silent)
         return pack
