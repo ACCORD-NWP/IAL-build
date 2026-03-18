@@ -838,7 +838,7 @@ class Pack(object):
         return tar_filename
 
 # Norms checker-------------------------------------------------------------
-    def check_coding_norms(self,local=True):
+    def check_coding_norms(self, local=True):
         """ Check coding norms of pack contents. """
 
         # get list of include directories (needed by gmkpack norms checker)
@@ -894,6 +894,18 @@ class Pack(object):
             jLine = jLine + 1
 
         return violations
+
+    def local_and_main_coding_norms(self):
+        """Incr pack: check coding norms compared to main, outputs to ./coding_norms.json"""
+        coding_norms = {}
+        if self.is_incremental:
+            print("Check coding norms...")
+            coding_norms['local'] = self.check_coding_norms(local=True)
+            coding_norms['main'] = self.check_coding_norms(local=False)
+            print("Coding norms checked")
+        with open('coding_norms.json', 'w') as out:
+              json.dump(coding_norms, out)
+
 
 # Others -------------------------------------------------------------------
 

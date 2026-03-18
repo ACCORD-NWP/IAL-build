@@ -91,16 +91,31 @@ def IAL2pack(IAL_git_ref,
     print("Pack successfully populated: " + pack.abspath)
 
     # check coding norms
-    coding_norms={}
-    if pack_type == 'incr':
-      if check_coding_norms:
-          print("Check coding norms...")
-          coding_norms['local']=pack.check_coding_norms(local=True)
-          coding_norms['main']=pack.check_coding_norms(local=False)
-          print("Coding norms checked")
-      with open('coding_norms.json', 'w') as out:
-          json.dump(coding_norms, out)
+    if check_coding_norms and pack_type == 'incr':
+        pack.local_and_main_coding_norms()
     return pack
+
+
+def incr_pack_check_coding_norms(IAL_git_ref,
+                                 IAL_repo_path,
+                                 compiler_label=None,
+                                 compiler_flag=None,
+                                 homepack=None,
+                                 ):
+    """
+    Check coding norms for an incr pack.
+
+    :param compiler_label: Gmkpack's compiler label to be used
+    :param compiler_flag: Gmkpack's compiler flag to be used
+    :param homepack: directory in which to build pack
+    """
+    view = IALview(IAL_repo_path, IAL_git_ref)
+    packname = GmkpackTool.guess_pack_name(view.ref, compiler_label, compiler_flag,
+                                           pack_type='incr',
+                                           IAL_repo_path=IAL_repo_path)
+    pack = Pack(packname,
+                homepack=GmkpackTool.get_homepack(homepack))
+    pack.local_and_main_coding_norms()
 
 
 def IALgitref2pack(IAL_git_ref,
