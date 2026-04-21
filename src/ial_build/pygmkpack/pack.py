@@ -838,69 +838,84 @@ class Pack(object):
         return tar_filename
 
 # Norms checker-------------------------------------------------------------
-    def check_coding_norms(self, local=True):
-        """ Check coding norms of pack contents. """
+    _re_workingon = re.compile(r'========== Working on file (?P<file>.*) ==========')
+    _failed = 'IAL-build -> check_norm_2011.pl failed : '
 
+    def check_norm_2011(self, sourcefiles):
+        """Call check_norm_2011.pl to check coding norms violations."""
         # get list of include directories (needed by gmkpack norms checker)
         with open(os.path.join(self.abspath, 'src', '.incpath'),'rt') as fid:
             incdirs = fid.read().replace('\n',':').replace('-I','')
+        # set environment
+        myenv = os.environ.copy()
+        myenv['VPATH'] = incdirs
+        myenv['INTFBDIR'] = '.'  # already in VPATH, but for some reason this can't be empty
+        # run norms checker
+        cmd = [os.path.join(myenv['GMKROOT'], 'aux', 'check_norm_2011.pl')] + sourcefiles
+        try:
+            print(f"check_norm_2011.pl on {len(sourcefiles)} files...")
+            check_norm_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=myenv).decode('utf-8').split('\n')
+        except subprocess.CalledProcessError as e:
+            check_norm_output = e.output.decode('utf-8').split('\n')
+            for i, line in enumerate(check_norm_output[::-1]):
+                # look for last file
+                m = self._re_workingon.match(line)
+                if m:
+                    problematic_source = m.group('file')
+                    issue = check_norm_output[-i]
+                    break
+            f = problematic_source.split('/')[-1]
+            i = sourcefiles.index(problematic_source)
+            print(f"check_norm_2011.pl performed on {i} source files")
+            print(f"check_norm_2011.pl failed on {f}, continue on remaining source files")
+            check_norm_output.append(self._failed + issue)
+            remaining = sourcefiles[i+1:]
+            # ! recursive call on remaining files
+            check_norm_output += self.check_norm_2011(remaining)
+        return check_norm_output
 
+    def check_coding_norms(self, local=True):
+        """ Check coding norms of pack contents. """
         # get list of files in src/local/
         try:
             sourcefiles = self.scanpack()
         except subprocess.CalledProcessError:
             print("Warning: unable to scan pack")
             return {'Warning':'Cannot analyse coding norms'}
-
         if local:
             # add src/local to sourcefiles
             sourcefiles = [os.path.join(self.abspath, 'src', 'local', ff) for ff in sourcefiles]
         else:
             sourcefiles = [os.path.join(self.abspath, 'src', 'main', ff) for ff in sourcefiles]
-
-        # set environment
-        myenv = os.environ.copy()
-        myenv['VPATH'] = incdirs
-        myenv['INTFBDIR'] = '.'  # already in VPATH, but for some reason this can't be empty
-
-        # run norms checker
-        cmd = [os.path.join(myenv['GMKROOT'], 'aux', 'check_norm_2011.pl')] + sourcefiles
-        check_norm_output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=myenv).decode('utf-8').split('\n')
-
+        # call coding norms checking tool
+        check_norm_output = self.check_norm_2011(sourcefiles)
         # parse output
-        jLine = 0
         violations = {}
-        while jLine < len(check_norm_output):
-            # check if this line marks a violation
-            if check_norm_output[jLine].startswith('  -- ('):
-                jLine2 = jLine-1
-                # identify violating source file
-                jLine2 = jLine-1
-                sourceFile = check_norm_output[jLine2].split('[')[0]
-                # actually might be earlier line ...
-                while sourceFile.startswith(' '):
-                    jLine2 = jLine2-1
-                    sourceFile = check_norm_output[jLine2].split('[')[0]
-                # identify norm violated
-                violatedNorm = check_norm_output[jLine][5:]
-                # add to list
+        for line in check_norm_output:
+            m = self._re_workingon.match(line)
+            if m:
+                sourceFile = m.group('file').split('/')[-1]
                 if sourceFile not in violations:
                     violations[sourceFile] = {}
+            elif line.startswith('  -- ('):
+                # identify norm violated
+                violatedNorm = line[5:]
                 if violatedNorm in violations[sourceFile]:
                     violations[sourceFile][violatedNorm] = violations[sourceFile][violatedNorm] + 1
                 else:
                     violations[sourceFile][violatedNorm] = 1
-            # goto next line
-            jLine = jLine + 1
-
+            elif line.startswith(self._failed):
+                issue = line[len(self._failed):]
+                violations[sourceFile][issue] = 1
         return violations
 
     def local_and_main_coding_norms(self):
         """Incr pack: check coding norms compared to main, outputs to ./coding_norms.json"""
         coding_norms = {}
         if self.is_incremental:
-            print("Check coding norms...")
+            print("\nCheck coding norms on local pack...")
             coding_norms['local'] = self.check_coding_norms(local=True)
+            print("\nCheck coding norms on main pack...")
             coding_norms['main'] = self.check_coding_norms(local=False)
             print("Coding norms checked")
         with open('coding_norms.json', 'w') as out:
