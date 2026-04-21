@@ -22,7 +22,7 @@ class GmkpackTool(object):
     _default_branch_radical = 'main'
     _default_version_number = '00'
     _default_compiler_flag = DEFAULT_PACK_COMPILER_FLAG
-    _OPTIONSPACK_re = re.compile(r'GMKFILE=(?P<gmkfile>.+)\s+<= -l (?P<label>\w+)\s+-o (?P<flag>\w+)$')
+    _OPTIONSPACK_re = re.compile(r' -l (?P<label>\w+)\s+-o (?P<flag>\w+)$')
     OFFICIAL_PACKS_re = IAL_OFFICIAL_PACKS_re
 
     @staticmethod
@@ -139,7 +139,8 @@ class GmkpackTool(object):
         if compiler_label in (None, ''):
             # get GMKFILE
             gmkfile = os.environ.get('GMKFILE')
-            assert gmkfile not in (None, ''), "Cannot guess compiler label (-l): $GMKFILE is not set."
+            if fatal:
+                assert gmkfile not in (None, ''), "Cannot guess compiler label (-l): $GMKFILE is not set."
             # parse optionspack
             options = [f.strip()
                        for f in subprocess.check_output(['optionspack']).decode('utf-8').split('\n')
