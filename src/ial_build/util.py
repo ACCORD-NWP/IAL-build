@@ -33,10 +33,12 @@ def copy_files_in_cwd(list_of_files, originary_directory_abspath):
         dirpath = os.path.dirname(os.path.abspath(f))
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
+        if os.path.islink(f):
+            os.unlink(f)
         shutil.copyfile(os.path.join(originary_directory_abspath, f), f,
-                        follow_symlinks=True)
+                        follow_symlinks=False)
         shutil.copystat(os.path.join(originary_directory_abspath, f), f,
-                        follow_symlinks=True)
+                        follow_symlinks=False)
 
 
 class DirectoryFiltering(object):
